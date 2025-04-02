@@ -85,33 +85,6 @@ except ImportError:
 _PY3 = sys.version_info[0] >= 3
 
 
-def _bisearch(ucs, table):
-    """
-    Auxiliary function for binary search in interval table.
-
-    :arg int ucs: Ordinal value of unicode character.
-    :arg list table: List of starting and ending ranges of ordinal values,
-        in form of ``[(start, end), ...]``.
-    :rtype: int
-    :returns: 1 if ordinal value ucs is found within lookup table, else 0.
-    """
-    lbound = 0
-    ubound = len(table) - 1
-
-    if ucs < table[0][0] or ucs > table[ubound][1]:
-        return 0
-    while ubound >= lbound:
-        mid = (lbound + ubound) // 2
-        if ucs > table[mid][1]:
-            lbound = mid + 1
-        elif ucs < table[mid][0]:
-            ubound = mid - 1
-        else:
-            return 1
-
-    return 0
-
-
 @lru_cache(maxsize=1000)
 def wcwidth(wc, unicode_version='auto'):
     r"""
@@ -150,8 +123,6 @@ def wcwidth(wc, unicode_version='auto'):
     _unicode_version = _wcmatch_version(unicode_version)
 
     # Zero width
-    # if _bisearch(ucs, ZERO_WIDTH[_unicode_version]):
-    #     return 0
     lbound = 0
     ubound = len(ZERO_WIDTH[_unicode_version]) - 1
 
@@ -166,7 +137,6 @@ def wcwidth(wc, unicode_version='auto'):
                 return 0
 
     # 1 or 2 width
-    # return 1 + _bisearch(ucs, WIDE_EASTASIAN[_unicode_version])
     lbound = 0
     ubound = len(WIDE_EASTASIAN[_unicode_version]) - 1
 
@@ -224,7 +194,6 @@ def wcswidth(pwcs, n=None, unicode_version='auto'):
             if _unicode_version is None:
                 _unicode_version = _wcversion_value(_wcmatch_version(unicode_version))
             if _unicode_version >= (9, 0, 0):
-                # width += _bisearch(ord(last_measured_char), VS16_NARROW_TO_WIDE["9.0.0"])
                 ucs = ord(last_measured_char)
                 lbound = 0
                 ubound = len(VS16_NARROW_TO_WIDE["9.0.0"]) - 1
