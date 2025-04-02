@@ -150,11 +150,38 @@ def wcwidth(wc, unicode_version='auto'):
     _unicode_version = _wcmatch_version(unicode_version)
 
     # Zero width
-    if _bisearch(ucs, ZERO_WIDTH[_unicode_version]):
-        return 0
+    # if _bisearch(ucs, ZERO_WIDTH[_unicode_version]):
+    #     return 0
+    lbound = 0
+    ubound = len(ZERO_WIDTH[_unicode_version]) - 1
+
+    if not (ucs < ZERO_WIDTH[_unicode_version][0][0] or ucs > ZERO_WIDTH[_unicode_version][ubound][1]):
+        while ubound >= lbound:
+            mid = (lbound + ubound) // 2
+            if ucs > ZERO_WIDTH[_unicode_version][mid][1]:
+                lbound = mid + 1
+            elif ucs < ZERO_WIDTH[_unicode_version][mid][0]:
+                ubound = mid - 1
+            else:
+                return 0
 
     # 1 or 2 width
-    return 1 + _bisearch(ucs, WIDE_EASTASIAN[_unicode_version])
+    # return 1 + _bisearch(ucs, WIDE_EASTASIAN[_unicode_version])
+    lbound = 0
+    ubound = len(WIDE_EASTASIAN[_unicode_version]) - 1
+
+    if ucs < WIDE_EASTASIAN[_unicode_version][0][0] or ucs > WIDE_EASTASIAN[_unicode_version][ubound][1]:
+        return 1
+    while ubound >= lbound:
+        mid = (lbound + ubound) // 2
+        if ucs > WIDE_EASTASIAN[_unicode_version][mid][1]:
+            lbound = mid + 1
+        elif ucs < WIDE_EASTASIAN[_unicode_version][mid][0]:
+            ubound = mid - 1
+        else:
+            return 2
+
+    return 1
 
 
 def wcswidth(pwcs, n=None, unicode_version='auto'):
@@ -197,7 +224,22 @@ def wcswidth(pwcs, n=None, unicode_version='auto'):
             if _unicode_version is None:
                 _unicode_version = _wcversion_value(_wcmatch_version(unicode_version))
             if _unicode_version >= (9, 0, 0):
-                width += _bisearch(ord(last_measured_char), VS16_NARROW_TO_WIDE["9.0.0"])
+                # width += _bisearch(ord(last_measured_char), VS16_NARROW_TO_WIDE["9.0.0"])
+                ucs = ord(last_measured_char)
+                lbound = 0
+                ubound = len(VS16_NARROW_TO_WIDE["9.0.0"]) - 1
+
+                if not (ucs < VS16_NARROW_TO_WIDE["9.0.0"][0][0] or ucs > VS16_NARROW_TO_WIDE["9.0.0"][ubound][1]):
+                    while ubound >= lbound:
+                        mid = (lbound + ubound) // 2
+                        if ucs > VS16_NARROW_TO_WIDE["9.0.0"][mid][1]:
+                            lbound = mid + 1
+                        elif ucs < VS16_NARROW_TO_WIDE["9.0.0"][mid][0]:
+                            ubound = mid - 1
+                        else:
+                            width += 1
+                            break
+
                 last_measured_char = None
             idx += 1
             continue
